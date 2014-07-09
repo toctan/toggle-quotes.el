@@ -31,18 +31,6 @@
 ;;
 ;;; Code:
 
-(defun toggle-quotes ()
-  "Toggle between single quotes and double quotes."
-  (interactive)
-  (when (tq/string-at-point-p)
-    (let* ((str (tq/string-at-point))
-           (new-str (tq/process str (syntax-table)))
-           (orig-point (point)))
-      (goto-char (tq/string-start-position))
-      (insert new-str)
-      (delete-char (length str))
-      (goto-char orig-point))))
-
 (defun tq/string-at-point-p ()
   "Return nil unless point is inside a string."
   (nth 3 (syntax-ppss)))
@@ -64,20 +52,6 @@
   (let* ((beg (tq/string-start-position))
          (end (tq/string-end-position)))
     (buffer-substring-no-properties beg end)))
-
-(defun tq/process (string table)
-  "Process STRING in the context of TABLE."
-  (with-temp-buffer
-    (with-syntax-table table
-      (insert string)
-      (let* ((old-quote (char-after (point-min)))
-             (new-quote (tq/other-quote old-quote)))
-        (if (eq (char-syntax new-quote) ?\")
-            (progn
-              (tq/remove-quote old-quote)
-              (tq/insert-quote new-quote)
-              (buffer-substring-no-properties (point-min) (point-max)))
-          string)))))
 
 (defun tq/other-quote (quote)
   "Return the opposite quote of QUOTE."
@@ -114,6 +88,33 @@
     (backward-char)
     (insert "\\")
     (tq/escape)))
+
+(defun tq/process (string table)
+  "Process STRING in the context of TABLE."
+  (with-temp-buffer
+    (with-syntax-table table
+      (insert string)
+      (let* ((old-quote (char-after (point-min)))
+             (new-quote (tq/other-quote old-quote)))
+        (if (eq (char-syntax new-quote) ?\")
+            (progn
+              (tq/remove-quote old-quote)
+              (tq/insert-quote new-quote)
+              (buffer-substring-no-properties (point-min) (point-max)))
+          string)))))
+
+;;;###autoload
+(defun toggle-quotes ()
+  "Toggle between single quotes and double quotes."
+  (interactive)
+  (when (tq/string-at-point-p)
+    (let* ((str (tq/string-at-point))
+           (new-str (tq/process str (syntax-table)))
+           (orig-point (point)))
+      (goto-char (tq/string-start-position))
+      (insert new-str)
+      (delete-char (length str))
+      (goto-char orig-point))))
 
 (provide 'toggle-quotes)
 ;;; toggle-quotes.el ends here
