@@ -29,6 +29,17 @@
 ;;
 ;;; Code:
 
+(defun toggle-quotes ()
+  "Toggle between single quotes and double quotes."
+  (interactive)
+  (when (tq/string-at-point-p)
+    (let ((str (tq/string-at-point))
+          (p (point)))
+      (goto-char (tq/string-start-position))
+      (kill-sexp)
+      (insert (tq/process str major-mode))
+      (goto-char p))))
+
 (defun tq/string-at-point-p ()
   "Return nil unless point is inside a string."
   (nth 3 (syntax-ppss)))
@@ -51,6 +62,35 @@
          (beg (car pos))
          (end (cdr pos)))
     (buffer-substring-no-properties beg end)))
+
+(defun tq/process (string mode)
+  "Process STRING in the context of MODE."
+  (with-temp-buffer
+    (funcall mode)
+    (insert string)
+    (let* ((old-quote (string (char-after (point-min))))
+	   (new-quote (tq/other-quote old-quote)))
+      (tq/remove-quote old-quote)
+      (tq/insert-quote new-quote)
+      (buffer-substring-no-properties (point-min) (point-max)))))
+
+(defun tq/other-quote (quote)
+  "Return the opposite quote of QUOTE."
+  (if (string= quote "'") "\"" "'"))
+
+(defun tq/remove-quote (quote)
+  "Remove the old QUOTE."
+  (goto-char (point-min))
+  (delete-char (length quote))
+  (goto-char (point-max))
+  (delete-char (- (length quote))))
+
+(defun tq/insert-quote (quote)
+  "Insert the new QUOTE."
+  (goto-char (point-min))
+  (insert quote)
+  (goto-char (point-max))
+  (insert quote))
 
 (provide 'toggle-quotes)
 ;;; toggle-quotes.el ends here
