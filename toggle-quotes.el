@@ -79,18 +79,36 @@
   (if (string= quote "'") "\"" "'"))
 
 (defun tq/remove-quote (quote)
-  "Remove the old QUOTE."
+  "Remove and unescape the old QUOTE."
   (goto-char (point-min))
   (delete-char (length quote))
   (goto-char (point-max))
-  (delete-char (- (length quote))))
+  (delete-char (- (length quote)))
+  (tq/unescape quote))
 
 (defun tq/insert-quote (quote)
-  "Insert the new QUOTE."
+  "Insert and escape the new QUOTE."
   (goto-char (point-min))
   (insert quote)
   (goto-char (point-max))
-  (insert quote))
+  (insert quote)
+  (tq/escape))
+
+(defun tq/unescape (quote)
+  "Unescape QUOTE in current buffer."
+  (goto-char (point-min))
+  (while (search-forward (concat "\\" quote) nil t)
+    (replace-match "")
+    (insert quote)))
+
+(defun tq/escape ()
+  "Escape the new quote in current buffer."
+  (goto-char (point-min))
+  (forward-sexp)
+  (unless (eq (point) (point-max))
+    (backward-char)
+    (insert "\\")
+    (tq/escape)))
 
 (provide 'toggle-quotes)
 ;;; toggle-quotes.el ends here
