@@ -35,12 +35,13 @@
   "Toggle between single quotes and double quotes."
   (interactive)
   (when (tq/string-at-point-p)
-    (let ((str (tq/string-at-point))
-          (p (point)))
+    (let* ((str (tq/string-at-point))
+           (new-str (tq/process str (syntax-table)))
+           (orig-point (point)))
       (goto-char (tq/string-start-position))
-      (insert (tq/process str (syntax-table)))
+      (insert new-str)
       (delete-char (length str))
-      (goto-char p))))
+      (goto-char orig-point))))
 
 (defun tq/string-at-point-p ()
   "Return nil unless point is inside a string."
@@ -50,19 +51,18 @@
   "Return the start position of the string at point."
   (nth 8 (syntax-ppss)))
 
-(defun tq/string-positions ()
-  "Return the start and end position of the string at point."
-  (let ((beg (tq/string-start-position)))
-    (save-excursion
-      (goto-char beg)
-      (forward-sexp 1)
-      (cons beg (point)))))
+(defun tq/string-end-position ()
+  "Return the end position of the string at point."
+  (save-excursion
+    (while (tq/string-at-point-p)
+      (skip-syntax-forward "^\"")
+      (skip-syntax-forward "\""))
+    (point)))
 
 (defun tq/string-at-point ()
   "Return string at point."
-  (let* ((pos (tq/string-positions))
-         (beg (car pos))
-         (end (cdr pos)))
+  (let* ((beg (tq/string-start-position))
+         (end (tq/string-end-position)))
     (buffer-substring-no-properties beg end)))
 
 (defun tq/process (string table)
