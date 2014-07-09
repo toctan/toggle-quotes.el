@@ -38,7 +38,7 @@
     (let ((str (tq/string-at-point))
           (p (point)))
       (goto-char (tq/string-start-position))
-      (insert (tq/process str major-mode))
+      (insert (tq/process str (syntax-table)))
       (kill-sexp)
       (goto-char p))))
 
@@ -65,19 +65,19 @@
          (end (cdr pos)))
     (buffer-substring-no-properties beg end)))
 
-(defun tq/process (string mode)
-  "Process STRING in the context of MODE."
+(defun tq/process (string table)
+  "Process STRING in the context of TABLE."
   (with-temp-buffer
-    (funcall mode)
-    (insert string)
-    (let* ((old-quote (char-after (point-min)))
-	   (new-quote (tq/other-quote old-quote)))
-      (if (eq (char-syntax new-quote) ?\")
-          (progn
-            (tq/remove-quote old-quote)
-            (tq/insert-quote new-quote)
-            (buffer-substring-no-properties (point-min) (point-max)))
-        string))))
+    (with-syntax-table table
+      (insert string)
+      (let* ((old-quote (char-after (point-min)))
+             (new-quote (tq/other-quote old-quote)))
+        (if (eq (char-syntax new-quote) ?\")
+            (progn
+              (tq/remove-quote old-quote)
+              (tq/insert-quote new-quote)
+              (buffer-substring-no-properties (point-min) (point-max)))
+          string)))))
 
 (defun tq/other-quote (quote)
   "Return the opposite quote of QUOTE."
