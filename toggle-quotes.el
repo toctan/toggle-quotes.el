@@ -48,11 +48,12 @@
 
 (defun tq/string-end-position ()
   "Return the end position of the string at point."
-  (save-excursion
-    (while (tq/string-at-point-p)
-      (skip-syntax-forward "^\"")
-      (skip-syntax-forward "\""))
-    (point)))
+  (let ((beg (tq/string-start-position)))
+    (save-excursion
+      (goto-char beg)
+      (forward-sexp 1)
+      (skip-syntax-backward "^\"")
+      (point))))
 
 (defun tq/string-at-point ()
   "Return string at point."
