@@ -25,6 +25,12 @@ Then require toggle-quotes, and bind the command `toggle-quotes`:
 (global-set-key (kbd "C-'") 'toggle-quotes)
 ```
 
+## MELPA ##
+
+If you're an Emacs 24 user or you have a recent version of package.el
+you can install toggle-quotes.el from the [MELPA](http://melpa.milkbox.net/)
+repository.
+
 ## Bugs & Improvements ##
 
 Please, report any problems that you find on the projects integrated
