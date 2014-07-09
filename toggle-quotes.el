@@ -38,8 +38,8 @@
     (let ((str (tq/string-at-point))
           (p (point)))
       (goto-char (tq/string-start-position))
-      (kill-sexp)
       (insert (tq/process str major-mode))
+      (kill-sexp)
       (goto-char p))))
 
 (defun tq/string-at-point-p ()
@@ -70,22 +70,25 @@
   (with-temp-buffer
     (funcall mode)
     (insert string)
-    (let* ((old-quote (string (char-after (point-min))))
+    (let* ((old-quote (char-after (point-min)))
 	   (new-quote (tq/other-quote old-quote)))
-      (tq/remove-quote old-quote)
-      (tq/insert-quote new-quote)
-      (buffer-substring-no-properties (point-min) (point-max)))))
+      (if (eq (char-syntax new-quote) ?\")
+          (progn
+            (tq/remove-quote old-quote)
+            (tq/insert-quote new-quote)
+            (buffer-substring-no-properties (point-min) (point-max)))
+        string))))
 
 (defun tq/other-quote (quote)
   "Return the opposite quote of QUOTE."
-  (if (string= quote "'") "\"" "'"))
+  (if (eq quote ?\') ?\" ?\'))
 
 (defun tq/remove-quote (quote)
   "Remove and unescape the old QUOTE."
   (goto-char (point-min))
-  (delete-char (length quote))
+  (delete-char 1)
   (goto-char (point-max))
-  (delete-char (- (length quote)))
+  (delete-char -1)
   (tq/unescape quote))
 
 (defun tq/insert-quote (quote)
@@ -99,7 +102,7 @@
 (defun tq/unescape (quote)
   "Unescape QUOTE in current buffer."
   (goto-char (point-min))
-  (while (search-forward (concat "\\" quote) nil t)
+  (while (search-forward (concat "\\" (string quote)) nil t)
     (replace-match "")
     (insert quote)))
 
