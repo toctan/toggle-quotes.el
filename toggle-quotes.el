@@ -29,5 +29,28 @@
 ;;
 ;;; Code:
 
+(defun tq/string-at-point-p ()
+  "Return nil unless point is inside a string."
+  (nth 3 (syntax-ppss)))
+
+(defun tq/string-start-position ()
+  "Return the start position of the string at point."
+  (nth 8 (syntax-ppss)))
+
+(defun tq/string-positions ()
+  "Return the start and end position of the string at point."
+  (let ((beg (tq/string-start-position)))
+    (save-excursion
+      (goto-char beg)
+      (forward-sexp 1)
+      (cons beg (point)))))
+
+(defun tq/string-at-point ()
+  "Return string at point."
+  (let* ((pos (tq/string-positions))
+         (beg (car pos))
+         (end (cdr pos)))
+    (buffer-substring-no-properties beg end)))
+
 (provide 'toggle-quotes)
 ;;; toggle-quotes.el ends here
