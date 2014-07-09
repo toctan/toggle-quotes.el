@@ -24,6 +24,8 @@
 
 ;;; Commentary:
 ;;
+;; (global-set-key (kbd "C-'") 'toggle-quotes)
+;;
 ;; `toggle-quotes' toggles the single-quoted string at point to
 ;; double-quoted one, and vice versa.
 ;;
