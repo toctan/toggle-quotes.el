@@ -39,7 +39,7 @@
           (p (point)))
       (goto-char (tq/string-start-position))
       (insert (tq/process str (syntax-table)))
-      (kill-sexp)
+      (delete-char (length str))
       (goto-char p))))
 
 (defun tq/string-at-point-p ()
