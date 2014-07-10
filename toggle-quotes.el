@@ -52,7 +52,8 @@
     (save-excursion
       (goto-char beg)
       (forward-sexp 1)
-      (skip-syntax-backward "^\"")
+      (if (eq major-mode 'js2-mode)
+          (skip-syntax-backward "^\""))
       (point))))
 
 (defun tq/string-at-point ()
