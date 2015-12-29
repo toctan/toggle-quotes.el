@@ -38,6 +38,8 @@
 ;;
 ;;; Code:
 
+(require 'thingatpt)
+
 (defun tq/string-at-point-p ()
   "Return nil unless point is inside a string."
   (nth 3 (syntax-ppss)))
@@ -124,6 +126,59 @@
       (insert new-str)
       (delete-char (length str))
       (goto-char orig-point))))
+
+(defun toggle-double-quote-function (beg end)
+  "Subroutine of `toggle-double-quote'.
+
+`narrow-to-region' BEG END."
+  (save-restriction
+    (narrow-to-region beg end)
+    (if (and
+	 (eq (char-syntax (char-after (point-min))) ?\")
+	 (eq (char-syntax (char-before (point-max))) ?\")
+	 )
+	(progn
+	  (goto-char (point-min))
+	  (delete-char 1)
+	  (goto-char (point-max))
+	  (delete-char -1))
+      (progn
+	(goto-char (point-min))
+	(insert ?\")
+	(goto-char (point-max))
+	(insert ?\"))
+      )))
+
+;;;###autoload
+(defun toggle-double-quote (&optional arg)
+  "Create double-quoted string or remove double quotes in region or sexp.
+
+With ARG 1, insert the most recent kill with double quotes.
+With argument N, reinsert the Nth most recent kill with double quotes.
+
+This function doesn't work in commentary."
+  (interactive "p")
+  (save-excursion
+    (cond
+     ((use-region-p)
+      (let (
+	    (beg (region-beginning))
+	    (end (region-end))
+	    )
+	(toggle-double-quote-function beg end)))
+     ((equal current-prefix-arg nil)
+      (if (tq/string-at-point-p)
+	  (goto-char (tq/string-start-position)))
+      (let (
+	    (beg (beginning-of-thing 'sexp))
+	    (end (end-of-thing 'sexp))
+	    )
+	(toggle-double-quote-function beg end)))
+     (t
+      (insert ?\")
+      (yank arg)
+      (insert ?\")
+      ))))
 
 (provide 'toggle-quotes)
 ;;; toggle-quotes.el ends here
