@@ -64,7 +64,9 @@
 
 (defun tq/other-quote (quote)
   "Return the opposite quote of QUOTE."
-  (if (eq quote ?\') ?\" ?\'))
+  (cond ((eq quote ?\") ?\')
+        ((eq quote ?\') ?\`)
+        ((eq quote ?\`) ?\")))
 
 (defun tq/remove-quote (quote)
   "Remove and unescape the old QUOTE."
